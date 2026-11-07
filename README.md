@@ -4,6 +4,21 @@ A NEMESIS package for Hyundai and Kia EVs with a NEMESIS head unit. It adds a **
 
 When Persist is checked, the head unit keeps **Battery Conditioning Mode** on. If Bluelink turns that mode off (for example, after a charge-limit change), the head unit turns it back on. The car still decides when to preheat. This package does not start preheating.
 
+## Two ways to install (this branch has both)
+
+This branch contains everything on `main` (the original method) plus a second, experimental method.
+
+| | Original method | Experimental method |
+|---|---|---|
+| Where the patched app is built | On your computer, from your car's own files | On the head unit, during install |
+| What you install | A package you build for your car | A ready-made package, `experimental/dist/` |
+| Tested on a head unit | Yes, on one car | **No, not yet** |
+| Risk | Lower | Higher: the first real test is the install itself |
+| Where to start | The Quick start below | [`experimental/README.md`](experimental/README.md) |
+
+If you want the method that has been run on a car, use the original method below. The experimental method is for
+trying the on-device build, and its README lists what is and is not verified.
+
 ## Quick start
 
 Once `build.env` is filled in and the head unit is connected over adb:
