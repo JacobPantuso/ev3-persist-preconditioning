@@ -1,7 +1,7 @@
 #!/bin/sh
 # Repository checks. Run from anywhere: sh tests/run_tests.sh
 # These do not need the vehicle files or the Android tools; the full build is covered by
-# docs/ADAPTING.md (the real build has to be run against your own vehicle's files).
+# README.md, "Steps" (the real build has to be run against your own vehicle's files).
 set -eu
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 TMP=$(mktemp -d)
