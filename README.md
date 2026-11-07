@@ -1,18 +1,18 @@
 # Persist Preconditioning (EV settings, head unit)
 
-A NEMESIS install package for Hyundai/Kia head units that adds a **Persist Preconditioning Mode** checkbox to the EV settings screen. When Persist is on, the head unit keeps battery conditioning mode on, and locks the original checkbox so the setting can't be changed by mistake.
+A NEMESIS install package for Hyundai/Kia head units that adds a **Persist Preconditioning Mode** checkbox to the EV settings screen. When Persist is on, the head unit keeps the battery conditioning mode setting on (it does not start preheating itself), and locks the original checkbox so the setting can't be changed by mistake.
 
 > **Warning**
 >
-> - This forces battery conditioning on. That uses battery energy and can shorten range, especially in cold weather.
+> - It keeps the battery conditioning mode *setting* on. It does not start preheating; the car decides when to preheat. When the car does preheat, that uses battery energy and can shorten range, especially in cold weather.
 > - It modifies vehicle systems. A bad build, a bad install, or a failed reboot can leave a head unit in a broken state.
 > - It has been tested on one vehicle only (a CEEV.CAN Ioniq 6 head unit, build `CEEV.CAN.0000.V014.010.250818`). Other builds need their own payload.
 > - Use it at your own risk. Keep a backup of your stock files before you install anything.
 
 ## How it behaves (read this first)
 
-- **Persist is on by default.** Installing the package turns it on, which forces battery conditioning on. Uncheck Persist to stop the forcing.
-- **The forcing has limits.** It writes "on" at most three times in a row before it stops. It only catches writes made through this app's own write path. A change that reaches the car some other way is not caught.
+- **Persist is on by default.** Installing the package turns it on, which keeps the conditioning mode setting on. Uncheck Persist to stop keeping it on. Changes that Bluelink makes, such as a charge-limit change that switches the mode off, are the main reason this is needed.
+- **The keep-on has limits.** It writes "on" at most three times in a row before it stops. It only catches writes made through this app's own write path. A change that reaches the car some other way is not caught.
 - **The original checkbox is locked while Persist is on.** Uncheck Persist first to change the mode.
 - **Uninstall does not reboot.** The restored stock code keeps running until the head unit restarts.
 - **Signing:** the payload is re-signed with your key. This is unverified on every head unit; if the app fails to start after install, the uninstall restores stock.
