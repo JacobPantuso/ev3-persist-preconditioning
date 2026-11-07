@@ -4,6 +4,27 @@ A NEMESIS package for Hyundai and Kia EVs with a NEMESIS head unit. It adds a **
 
 When Persist is checked, the head unit keeps **Battery Conditioning Mode** on. If Bluelink turns that mode off (for example, after a charge-limit change), the head unit turns it back on. The car still decides when to preheat. This package does not start preheating.
 
+## Quick start
+
+Once `build.env` is filled in and the head unit is connected over adb:
+
+```sh
+sh tools/pull_stock.sh                                   # copy stock files, print checksums
+sh tools/build.sh 1.0                                    # build out/ev3-persist-1.0.zip
+sh tools/install.sh out/ev3-persist-1.0.zip              # install over adb (reboots the head unit)
+adb shell cat /data/nemesis/ev3.persist.preconditioning.log   # check the result
+```
+
+To install from a USB drive instead of adb:
+
+```sh
+sh tools/usb.sh out/ev3-persist-1.0.zip /Volumes/MYUSB   # then accept the prompt in NEMESIS on the head unit
+```
+
+To remove it: `sh tools/uninstall.sh`
+
+The steps below explain each command.
+
 ## Read this first
 
 - **Use at your own risk.** This changes software on a vehicle's head unit. A bad build or a failed install can leave it unusable.
