@@ -53,7 +53,32 @@ Run every command from the root of this repository.
 
 ### 1. Install the tools
 
-Java, `apktool`, `jarsigner`, `python3`, `zip`, and `adb`. Get `baksmali.jar` and `smali.jar` (version 2.x), and put your `lpatch` checksum tool in `package/bin/` (it is not in this repository).
+**macOS** (with [Homebrew](https://brew.sh)):
+
+```sh
+brew install openjdk apktool python
+brew install --cask android-platform-tools
+```
+
+`jarsigner` and `keytool` come with the JDK. `zip` is already on macOS. If `java` or `jarsigner` isn't found after installing, follow the message Homebrew prints to add the JDK to your PATH.
+
+**Debian or Ubuntu Linux:**
+
+```sh
+sudo apt install openjdk-17-jdk apktool adb python3 zip
+```
+
+The `apktool` in some distributions is old. If the build fails inside apktool, install the current version from https://apktool.org.
+
+**Smali tools (both platforms):** download `baksmali.jar` and `smali.jar` from the releases page at https://github.com/JesusFreke/smali/releases. Use the same version for both (2.x). Put them anywhere, then set their paths in `build.env`.
+
+**The `lpatch` checksum tool:** not in this repository. Copy it into `package/bin/` and make it executable (`chmod +x package/bin/lpatch`).
+
+Check the install:
+
+```sh
+java -version && apktool --version && jarsigner -help > /dev/null && adb version && python3 --version
+```
 
 ### 2. Create your settings
 
