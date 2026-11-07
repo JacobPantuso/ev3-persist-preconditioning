@@ -7,14 +7,35 @@ Experimental. Use at your own risk.
 
 ## Install
 
-Get the package from `experimental/dist/` (or build it, see below), then install it over adb:
+Get the package from `experimental/dist/` (or build it, see below). Then install it one of two ways. The install
+builds for a few minutes, then the head unit reboots.
+
+### Over adb
 
 ```sh
 adb push experimental/dist/ev3-persist-experimental-0.1.0.zip /data/local/tmp/
 adb shell /system/xbin/nemesis install /data/local/tmp/ev3-persist-experimental-0.1.0.zip
 ```
 
-The install builds for a few minutes, then the head unit reboots.
+### From a USB drive
+
+1. Copy the zip to the root of the drive (here the drive is `/Volumes/MYUSB`):
+
+   ```sh
+   cp experimental/dist/ev3-persist-experimental-0.1.0.zip /Volumes/MYUSB/
+   ```
+
+2. Create `NEMESIS.data` on the same drive:
+
+   ```sh
+   printf '[nemesis]\nversion=1.0\ntype=install\npath=ev3-persist-experimental-0.1.0.zip\n' > /Volumes/MYUSB/NEMESIS.data
+   ```
+
+3. Plug the drive into the head unit, open NEMESIS, and accept the install prompt. Keep the drive plugged in until the
+   head unit has rebooted.
+
+The install copies its log to the drive, in a folder named `EV3_PERSIST_EXP_...`, so you can read it on your computer
+afterwards.
 
 ## Check that it worked
 
