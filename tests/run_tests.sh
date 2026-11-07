@@ -60,11 +60,11 @@ fi
 pass "payload verifier refuses a non-APK"
 
 # 5. repository hygiene: scan only the repo's own files, not the ignored build folders
-PRUNE='-path "$ROOT/build" -o -path "$ROOT/stock" -o -path "$ROOT/out" -o -path "$ROOT/.git"'
+PRUNE='-path "$ROOT/build" -o -path "$ROOT/stock" -o -path "$ROOT/out" -o -path "$ROOT/.git" -o -path "$ROOT/experimental/dist" -o -path "$ROOT/experimental/build"'
 BAD=$(eval "find \"$ROOT\" \( $PRUNE \) -prune -o \( -name '*.apk' -o -name '*.odex' -o -name '*.dex' -o -name '*.jar' -o -name '*.keystore' -o -name '*.jks' -o -name '*.smali' -o -name '*.zip' \) -print")
 [ -z "$BAD" ] || fail "binary or key files in repo: $BAD"
 NAME=$(id -un)
-if grep -rIl --exclude-dir=.git --exclude-dir=build --exclude-dir=stock --exclude-dir=out --exclude=build.env --exclude=run_tests.sh -e "$NAME" -e '/Users/' "$ROOT" > "$TMP/personal.txt" 2>/dev/null; [ -s "$TMP/personal.txt" ]; then
+if grep -rIl --exclude-dir=.git --exclude-dir=build --exclude-dir=stock --exclude-dir=out --exclude-dir=dist --exclude=build.env --exclude=run_tests.sh -e "$NAME" -e '/Users/' "$ROOT" > "$TMP/personal.txt" 2>/dev/null; [ -s "$TMP/personal.txt" ]; then
     fail "personal path or name in: $(cat "$TMP/personal.txt")"
 fi
 pass "no binaries, keys, or personal details"

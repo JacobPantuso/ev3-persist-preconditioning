@@ -1,0 +1,12 @@
+[nemesis]
+version=1.1
+id=ev3.persist.experimental
+name=Persist Preconditioning (Experimental)
+type=application
+package-version=0.1.0
+short-desc="Experimental: rebuilds the EV settings app on the head unit."
+os="*"
+models="*"
+preinstall=scripts/pre.sh
+postinstall=scripts/post.sh
+preuninstall=scripts/preun.sh
