@@ -17,6 +17,7 @@ done
 export STOCK_APK=stock/HKMC_TAppEV3.apk STOCK_ODEX=stock/HKMC_TAppEV3.odex
 export FRAMEWORK_DIR=stock/framework/framework WORK_DIR=build
 sh tools/build_payload.sh
+sh tools/verify_payload.sh build/HKMC_TAppEV3.patched.apk || { echo 'build stopped: the payload did not verify' >&2; exit 1; }
 MD5=md5sum; command -v md5 >/dev/null 2>&1 && MD5="md5 -q"
 STOCK_APK_MD5=$($MD5 stock/HKMC_TAppEV3.apk | cut -d' ' -f1)
 STOCK_ODEX_MD5=$($MD5 stock/HKMC_TAppEV3.odex | cut -d' ' -f1)

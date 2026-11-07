@@ -53,10 +53,18 @@ unzip -p "$TMP/test.zip" NEMESIS.data | grep -q '^models="testmodel"$' || fail "
 pass "packaging refuses without lpatch and includes it when present"
 pass "packaging writes checksums and version"
 
-# 5. repository hygiene: no vendor binaries, keys, or personal details
-BAD=$(find "$ROOT" \( -name '*.apk' -o -name '*.odex' -o -name '*.dex' -o -name '*.jar' -o -name '*.keystore' -o -name '*.jks' -o -name '*.smali' -o -name '*.zip' \) -print)
+# 4b. the payload verifier refuses a file that is not a patched build
+if sh "$ROOT/tools/verify_payload.sh" "$TMP/payload.apk" > "$TMP/verify.log" 2>&1; then
+    fail "verify_payload accepted a file that is not an APK"
+fi
+pass "payload verifier refuses a non-APK"
+
+# 5. repository hygiene: scan only the repo's own files, not the ignored build folders
+PRUNE='-path "$ROOT/build" -o -path "$ROOT/stock" -o -path "$ROOT/out" -o -path "$ROOT/.git"'
+BAD=$(eval "find \"$ROOT\" \( $PRUNE \) -prune -o \( -name '*.apk' -o -name '*.odex' -o -name '*.dex' -o -name '*.jar' -o -name '*.keystore' -o -name '*.jks' -o -name '*.smali' -o -name '*.zip' \) -print")
 [ -z "$BAD" ] || fail "binary or key files in repo: $BAD"
-if NAME=$(id -un); grep -rIl --exclude-dir=.git --exclude=run_tests.sh -e "$NAME" -e '/Users/' "$ROOT" > "$TMP/personal.txt" 2>/dev/null; [ -s "$TMP/personal.txt" ]; then
+NAME=$(id -un)
+if grep -rIl --exclude-dir=.git --exclude-dir=build --exclude-dir=stock --exclude-dir=out --exclude=build.env --exclude=run_tests.sh -e "$NAME" -e '/Users/' "$ROOT" > "$TMP/personal.txt" 2>/dev/null; [ -s "$TMP/personal.txt" ]; then
     fail "personal path or name in: $(cat "$TMP/personal.txt")"
 fi
 pass "no binaries, keys, or personal details"
