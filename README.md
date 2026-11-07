@@ -20,7 +20,6 @@ This project is not affiliated with Hyundai or Kia.
 
 - A head unit that runs NEMESIS, with `adb` access.
 - On your computer: Java, `apktool`, `jarsigner`, `python3`, `zip`, and `adb`.
-- The `lpatch` checksum tool. It is not in this repository. Copy it into `package/bin/` and make it executable.
 - A signing key of your own. Create one with:
 
   ```sh
@@ -31,98 +30,54 @@ This project is not affiliated with Hyundai or Kia.
 
 Run every command from the root of this repository.
 
-### 1. Copy the stock files from the head unit
+### 1. Install the tools
+
+Java, `apktool`, `jarsigner`, `python3`, `zip`, and `adb`. Get `baksmali.jar` and `smali.jar` (version 2.x), and put your `lpatch` checksum tool in `package/bin/` (it is not in this repository).
+
+### 2. Create your settings
 
 ```sh
-mkdir -p stock/framework
-adb pull /system/app/HKMC_TAppEV3.apk stock/
-adb pull /system/app/HKMC_TAppEV3.odex stock/
-adb pull /system/framework/ stock/
+cp build.env.example build.env
 ```
 
-The framework files end up in `stock/framework/framework/`. If `HKMC_TAppEV3.odex` is missing, a Persist install is already on the unit. Uninstall it first (step 6), then copy again.
+Open `build.env` and fill in the jar paths, your keystore, and the OS and MODEL of your head unit.
 
-### 2. Record the stock checksums
+### 3. Copy the stock files from the head unit
 
-On a Mac, use `md5 -q`. On Linux, use `md5sum`.
+Connect the head unit over adb, then run:
 
 ```sh
-md5 -q stock/HKMC_TAppEV3.apk
-md5 -q stock/HKMC_TAppEV3.odex
+sh tools/pull_stock.sh
 ```
 
-Keep both values. You need them in step 4.
+It copies the stock APK, odex, and framework into `stock/`, and prints the OS string to put in `build.env`. Keep a copy of `stock/` somewhere safe.
 
-### 3. Build the patched app
+### 4. Build
 
 ```sh
-export STOCK_APK=stock/HKMC_TAppEV3.apk
-export STOCK_ODEX=stock/HKMC_TAppEV3.odex
-export FRAMEWORK_DIR=stock/framework/framework
-export BAKSMALI_JAR=/path/to/baksmali.jar   # version 2.x
-export SMALI_JAR=/path/to/smali.jar         # same version family
-export KEYSTORE=my.keystore
-export KEY_ALIAS=myalias
-export KEY_PASS=yourpassword
-sh tools/build_payload.sh
+sh tools/build.sh 1.0
 ```
 
-When it finishes, it prints the patched file and its checksum. The output is in `build/`.
+This builds the patched app, signs it, and makes the install zip in `out/`. It also writes `out/NEMESIS.data` for a USB drive. If it stops, the message names a log in `build/` to read.
 
-If it stops, the message names a log to read. In `build/`, the most useful logs are `baksmali.log`, `smali.log`, and `apktool-b.log`. A failure in a smali or resource patch usually means this build uses different names from the one this project was written for. The patch scripts in `tools/` say which anchor failed.
+### 5. Install
 
-### 4. Make the install package
+Pick one:
 
-```sh
-mkdir -p out
-sh tools/make_package.sh build/HKMC_TAppEV3.patched.apk <stock-apk-md5> <stock-odex-md5> 1.0 out/ev3-persist-1.0.zip
-```
+- **Over adb:** `sh tools/install.sh out/ev3-persist-1.0.zip`
+- **From a USB drive:** plug the drive in, find its folder (for example `/Volumes/MYUSB`), then run `sh tools/usb.sh out/ev3-persist-1.0.zip /Volumes/MYUSB`. Plug the drive into the head unit and accept the install prompt in NEMESIS.
 
-Use the checksums from step 2. The script refuses to run if `package/bin/lpatch` is missing.
-
-### 5. Install it
-
-Choose one.
-
-**From a USB drive:**
-
-1. Copy `out/ev3-persist-1.0.zip` to the root of a USB drive.
-2. Create `NEMESIS.data` on the same drive with these lines:
-
-   ```ini
-   [nemesis]
-   version=1.0
-   type=install
-   path=ev3-persist-1.0.zip
-   ```
-
-3. Plug the drive into the head unit, open NEMESIS, and accept the install prompt.
-
-**Over adb:**
-
-```sh
-adb push out/ev3-persist-1.0.zip /data/local/tmp/
-adb shell /system/xbin/nemesis install /data/local/tmp/ev3-persist-1.0.zip
-```
-
-Installing triggers a reboot. Wait for the head unit to come back up.
+The head unit reboots after installing.
 
 ### 6. Check that it worked
 
 - Open **EV Settings**. You should see **Persist Preconditioning Mode** under Battery Conditioning Mode.
-- Check the log on the head unit:
-
-  ```sh
-  adb shell cat /data/nemesis/ev3.persist.preconditioning.log
-  ```
-
-  The last line should say `installed - rebooting so Dalvik dexopts the patched APK` on the first install, and nothing should say `FAIL`.
+- Check the log: `adb shell cat /data/nemesis/ev3.persist.preconditioning.log`. The last line on a first install should say `installed - rebooting so Dalvik dexopts the patched APK`, and nothing should say `FAIL`.
 
 ### 7. Uninstall
 
 ```sh
-adb shell /system/xbin/nemesis uninstall ev3.persist.preconditioning
-adb shell reboot
+sh tools/uninstall.sh
 ```
 
 The uninstall puts back the stock APK and odex from the backup made at install time.
@@ -145,7 +100,10 @@ When a patch fails on a new build, you will need to update the anchor text in `t
 | Path | What it is |
 |---|---|
 | `package/` | The NEMESIS package: descriptor, install, post-install, and uninstall scripts |
-| `tools/build_payload.sh` | Builds the patched app from one build's stock files |
+| `tools/pull_stock.sh` | Copies the stock files from the head unit |
+| `tools/build.sh` | Builds the patched app and the install zip |
+| `tools/install.sh`, `tools/uninstall.sh`, `tools/usb.sh` | Install, remove, or copy to USB |
+| `tools/build_payload.sh` | The payload build that `build.sh` calls |
 | `tools/make_package.sh` | Puts the patched app into the install zip |
 | `tools/smali/` | Patches to the app's code |
 | `tools/resources/patch_resources.py` | Patches to the layout, IDs, and strings |

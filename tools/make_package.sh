@@ -16,6 +16,8 @@ OUT_DIR=$(cd "$(dirname "$OUT")" && pwd); OUT=$OUT_DIR/$(basename "$OUT")
 [ -s "$PAYLOAD" ] || { echo "payload missing: $PAYLOAD" >&2; exit 1; }
 if command -v md5 >/dev/null 2>&1; then PATCHED_MD5=$(md5 -q "$PAYLOAD"); else PATCHED_MD5=$(md5sum "$PAYLOAD" | cut -d' ' -f1); fi
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
+: "${OS:?set OS to the head unit os string (getprop ro.build.product)}"
+: "${MODEL:?set MODEL to the head unit model string (for example ceev_ca)}"
 [ -x "$ROOT/package/bin/lpatch" ] || { echo "package/bin/lpatch is missing or not executable; copy it in before packaging" >&2; exit 1; }
 STAGE=$(mktemp -d)
 trap 'rm -rf "$STAGE"' EXIT
@@ -30,7 +32,8 @@ sed -i.bak -e "s/^STOCK_APK_MD5=.*/STOCK_APK_MD5=$STOCK_APK_MD5/" \
            -e "s/^STOCK_ODEX_MD5=.*/STOCK_ODEX_MD5=$STOCK_ODEX_MD5/" \
            -e "s/^PATCHED_APK_MD5=.*/PATCHED_APK_MD5=$PATCHED_MD5/" "$STAGE/scripts/common.sh"
 rm -f "$STAGE/scripts/common.sh.bak"
-sed -i.bak -e "s/^package-version=.*/package-version=$VERSION/" "$STAGE/NEMESIS.data"
+sed -i.bak -e "s/^package-version=.*/package-version=$VERSION/" \
+           -e "s/^os=.*/os=\"$OS\"/" -e "s/^models=.*/models=\"$MODEL\"/" "$STAGE/NEMESIS.data"
 rm -f "$STAGE/NEMESIS.data.bak"
 (cd "$STAGE" && zip -q -r "$OUT" NEMESIS.data bin scripts files)
 echo "wrote $OUT (payload md5 $PATCHED_MD5)"

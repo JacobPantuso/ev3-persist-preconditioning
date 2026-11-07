@@ -31,6 +31,7 @@ grep -q "anchor" "$TMP/bad.log" || fail "patch_resources did not name the missin
 pass "resource patch stops on an unknown layout"
 
 # 4. packaging writes the payload checksum, the stock checksums and the version
+export OS=TESTOS MODEL=testmodel
 printf 'fake payload for test\n' > "$TMP/payload.apk"
 NOBIN="$TMP/nobin"; mkdir -p "$NOBIN"; cp -R "$ROOT/tools" "$ROOT/package" "$NOBIN/"; rm -rf "$NOBIN/package/bin"
 STOCKA=0123456789abcdef0123456789abcdef; STOCKO=fedcba9876543210fedcba9876543210
@@ -47,6 +48,8 @@ unzip -p "$TMP/test.zip" scripts/common.sh | grep -q "^STOCK_ODEX_MD5=$STOCKO$" 
 PAYMD5=$(if command -v md5 >/dev/null 2>&1; then md5 -q "$TMP/payload.apk"; else md5sum "$TMP/payload.apk" | cut -d' ' -f1; fi)
 unzip -p "$TMP/test.zip" scripts/common.sh | grep -q "^PATCHED_APK_MD5=$PAYMD5$" || fail "patched md5 not written"
 unzip -p "$TMP/test.zip" NEMESIS.data | grep -q "^package-version=9.9$" || fail "version not written"
+unzip -p "$TMP/test.zip" NEMESIS.data | grep -q '^os="TESTOS"$' || fail "os not written"
+unzip -p "$TMP/test.zip" NEMESIS.data | grep -q '^models="testmodel"$' || fail "model not written"
 pass "packaging refuses without lpatch and includes it when present"
 pass "packaging writes checksums and version"
 
